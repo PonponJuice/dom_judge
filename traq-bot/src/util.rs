@@ -25,7 +25,7 @@ pub async fn make_user(user: User, authorization: &str) -> Result<()> {
     use reqwest::Client;
     let base_url = std::env::var("BASE_URL").unwrap();
 
-    tracing::info!("Creating user: {:?}", user);    
+    tracing::info!("Creating user: {:?}", user);
 
     let client = Client::new();
     let response = client

@@ -4,7 +4,13 @@ use axum::{Router, body::Bytes, extract::State, routing::post};
 use http::{HeaderMap, StatusCode};
 use tokio::net::TcpListener;
 use tracing_subscriber::EnvFilter;
-use traq::apis::{configuration::Configuration, message_api::post_direct_message};
+use traq::{
+    apis::{
+        configuration::Configuration, message_api::post_direct_message,
+        stamp_api::add_message_stamp,
+    },
+    models::PostMessageStampRequest,
+};
 use traq_bot_http::{Event, RequestParser, payloads::MessageCreatedPayload};
 
 mod util;
@@ -71,8 +77,16 @@ async fn message_created(app: App, payload: MessageCreatedPayload) -> StatusCode
         payload.message.user.display_name,
         payload.message.text
     );
-
     if payload.message.text.starts_with("/create_team ") {
+        // コメントを確認したことを示すスタンプを押す
+        let _ = add_message_stamp(
+            &app.client_config,
+            &payload.message.id,
+            "4e4c3c0b-2a23-439d-98b1-2fa3ef5caf40", // 既読スタンプのID
+            Some(PostMessageStampRequest { count: 1 }),
+        )
+        .await;
+
         let team_name = payload
             .message
             .text
@@ -111,6 +125,14 @@ async fn message_created(app: App, payload: MessageCreatedPayload) -> StatusCode
 
         let response =
             post_direct_message(&app.client_config, &payload.message.user.id, Some(request)).await;
+
+        let _ = add_message_stamp(
+            &app.client_config,
+            &payload.message.id,
+            "aea52f9a-7484-47ed-ab8f-3b4cc84a474d", // 既読スタンプのID
+            Some(PostMessageStampRequest { count: 1 }),
+        )
+        .await;
 
         if let Err(e) = response {
             tracing::error!("ダイレクトメッセージの送信に失敗しました: {e}");
