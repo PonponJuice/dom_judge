@@ -149,6 +149,11 @@ async fn message_created(app: App, payload: MessageCreatedPayload) -> StatusCode
 }
 
 async fn channel_joined(app: App, payload: JoinedPayload) -> StatusCode {
+    tracing::info!(
+        "チャンネル '{}' に参加しました。",
+        payload.channel.name
+    );
+
     let message = r#"## [DOM-Judge](//judge.ponjuice.net) の参加登録用Botです。
 参加登録は以下の形式で行うことができます。
 ```
@@ -165,7 +170,11 @@ async fn channel_joined(app: App, payload: JoinedPayload) -> StatusCode {
         embed: Some(true),
     };
 
-    let _ = post_message(&app.client_config, &payload.channel.id, Some(request)).await;
+    let _ = post_message(&app.client_config, &payload.channel.id, Some(request)).await
+    .map_err(|e| {
+        tracing::error!("メッセージの送信に失敗しました: {e}");
+        e
+    });
 
     StatusCode::NO_CONTENT
 }
