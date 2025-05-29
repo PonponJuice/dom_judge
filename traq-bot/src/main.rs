@@ -6,12 +6,15 @@ use tokio::net::TcpListener;
 use tracing_subscriber::EnvFilter;
 use traq::{
     apis::{
-        configuration::Configuration, message_api::post_direct_message,
+        channel_api::post_message, configuration::Configuration, message_api::post_direct_message,
         stamp_api::add_message_stamp,
     },
     models::PostMessageStampRequest,
 };
-use traq_bot_http::{Event, RequestParser, payloads::MessageCreatedPayload};
+use traq_bot_http::{
+    Event, RequestParser,
+    payloads::{JoinedPayload, MessageCreatedPayload},
+};
 
 mod util;
 
@@ -67,6 +70,7 @@ async fn bot_handle(State(app): State<App>, headers: HeaderMap, body: Bytes) -> 
 
     match event {
         Event::MessageCreated(payload) => message_created(app, payload).await,
+        Event::Joined(payload) => channel_joined(app, payload).await,
         _ => StatusCode::NO_CONTENT,
     }
 }
@@ -141,5 +145,27 @@ async fn message_created(app: App, payload: MessageCreatedPayload) -> StatusCode
 
         tracing::info!("ダイレクトメッセージを送信しました。");
     }
+    StatusCode::NO_CONTENT
+}
+
+async fn channel_joined(app: App, payload: JoinedPayload) -> StatusCode {
+    let message = r#"## [DOM-Judge](//judge.ponjuice.net) の参加登録用Botです。
+参加登録は以下の形式で行うことができます。
+```
+/create_team <チーム名> 
+```
+チーム名を指定すると、チームが作成され、ログインに必要な情報がDMで渡されます
+
+### 注意事項
+- チーム名には空白をふくめることはできますが、先頭と末尾に空白を含めることはできません。
+- チームは一人につき一つしか作成できません。"#;
+
+    let request = traq::models::PostMessageRequest {
+        content: message.to_string(),
+        embed: Some(true),
+    };
+
+    let _ = post_message(&app.client_config, &payload.channel.id, Some(request)).await;
+
     StatusCode::NO_CONTENT
 }
