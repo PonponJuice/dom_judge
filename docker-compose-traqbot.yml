@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  traq-bot:
+    build:
+      context: ./traq-bot
+      dockerfile: DockerFile
+    container_name: domjudge-traq-bot
+    env_file:
+      - ./traq-bot/.env
+    ports:
+      - "12346:8080"
+    restart: unless-stopped
