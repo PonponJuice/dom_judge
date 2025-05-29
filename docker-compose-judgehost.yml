@@ -1,0 +1,40 @@
+version: '3.9'
+
+x-common-configuration: &common-configuration
+  image: domjudge/judgehost:latest
+  restart: on-failure:5
+  volumes:
+    - /sys/fs/cgroup:/sys/fs/cgroup
+  privileged: true
+  env_file:
+    - judgehost.env
+
+services:
+  judgedaemon4:
+    <<: *common-configuration
+    hostname: judgedaemon1
+    container_name: judgedaemon1
+    environment:
+      DAEMON_ID: 1
+
+  judgedaemon5:
+    <<: *common-configuration
+    hostname: judgedaemon2
+    container_name: judgedaemon2
+    environment:
+      DAEMON_ID: 2
+
+  judgedaemon6:
+    <<: *common-configuration
+    hostname: judgedaemon3
+    container_name: judgedaemon3
+    environment:
+      DAEMON_ID: 3
+
+  judgedaemon7:
+    <<: *common-configuration
+    hostname: judgedaemon4
+    container_name: judgedaemon4
+    environment:
+      DAEMON_ID: 4
+
