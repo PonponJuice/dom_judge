@@ -85,9 +85,10 @@ async fn message_created(app: App, payload: MessageCreatedPayload) -> StatusCode
 
         tracing::info!("チーム '{}' を作成します。", team_name);
 
-        let password = util::make_password();
+        let password = util::make_random_str(16);
 
         let user = util::User {
+            username: payload.message.user.name.clone(),
             team_name: team_name.to_string(),
             password,
         };
