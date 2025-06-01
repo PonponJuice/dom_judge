@@ -18,9 +18,6 @@ for filename in os.listdir(CONTESTS_PATH):
     if os.path.isdir(os.path.join(CONTESTS_PATH, filename)):
         contests.append(filename)
 
-print(f'Row contests: {row_contests}')
-print(f'Existing contests: {contests}')
-
 new_contests = []
 for row_contest in row_contests:
     if row_contest not in contests:
@@ -29,6 +26,7 @@ for row_contest in row_contests:
 fix_problems = []
 
 for contest in new_contests:
+    print(f'Processing contest: {contest}')
     contest_path = os.path.join(CONTESTS_PATH, contest)
     row_contest_path = os.path.join(ROW_CONTESTS_PATH, contest)
     if not os.path.exists(contest_path):
@@ -41,7 +39,6 @@ for contest in new_contests:
             problems.append(filename)
     
     for problem in problems:
-        print(f'Creating problem {problem}...')
         row_testcase_path = os.path.join(row_contest_path, problem)
         problem_path = os.path.join(contest_path, problem)
         if not os.path.exists(problem_path):
